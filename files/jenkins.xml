@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>jenkins</short>
+  <description>This is a Jenkins server, it needs this service.</description>
+  <service name="jenkins"/>
+</zone>
