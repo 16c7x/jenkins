@@ -31,7 +31,7 @@ A simple solution would have been to add the following to the Puppet module.
   }
 ```
 But globaly switching security off on a server is generaly considered bad practice.
-All the documentation I found on **firewalld** suggestred there was no way of configuring it without using the ```firewall-cmd ```  command line command which would result in having to use an exec command in the Puppet module. I try to avoid using the exec resource type in Puppet because Puppet is a declerative language and an exec to run a command line is scripting. In this case though there was no other option. 
+All the documentation I found on **firewalld** suggestred there was no way of configuring it without using the ```firewall-cmd ```  command line command which would result in having to use an exec command in the Puppet module. I try to avoid using the ```exec``` resource type in Puppet because Puppet is a declerative language and an ```exec``` to run a command line is scripting. In this case though there was no other option. 
 
 ## Please explain why the requirement (d) above is important.
 If it requires manual intevention it's not fully automated.
@@ -44,7 +44,7 @@ To get Vagrant up and running I used
 For the installation of Jenkins I looked here:
     https://jenkins.io/doc/book/installing/#fedora
 
-For generap Puppet resource reference I used;
+For general Puppet resource reference I used;
     https://puppet.com/docs/puppet/5.5/type.html
 
 To understand the requirements of firewalld I used these pages;
@@ -73,6 +73,7 @@ It can rapidly improve fault finding, bebugging and remediation by making it pos
 I'd successfully created a jenkins service in /usr/lib/firewalld/services/.
 I've created a block of code that would add the service to the the public zone, see below;
 
+```
   augeas { 'jenkinstest' :
     context => "/files/usr/lib/firewalld/zones/public.xml",
     lens    => "Xml.lns",
@@ -83,5 +84,6 @@ I've created a block of code that would add the service to the the public zone, 
       'set zone/service[last()+1] "#empty"',
       'set zone/service[last()]/#attribute/name "jenkins"'],
     }
+```
 
 But there was no way of 
