@@ -24,18 +24,23 @@ class jenkins  (
   package {'jenkins' : ensure => 'installed'}
 
 ###############################
-# The Jenkins installation enables the service but we need to define
-# it here so config changes can refresh the service 
+# Install and configure Jenkins
   service { 'jenkins' :
     ensure => running,
-    enable => true,
+    #enable => true,  <- TEST THIS
   }
+
+  augeas { 'jenkins_port' :
+    context => "/files/etc/sysconfig/jenkins",
+    changes => "set JENKINS_PORT $jenkinsport",
+    onlyif  => "match JENKINS_PORT[.='$jenkinsport'] size == 0",
+    notify  =>  Service[jenkins],
+    }
 
 ###############################
 # Firewalld needs to expose the port to external connections.
 # I could add - service {'firewalld' ; ensure => 'stopped', }
 # but that's a bit excessive.
-
 # It's enabled by default we need to define it so we can refresh it  
   service { 'firewalld' :
     ensure => running,
@@ -49,35 +54,34 @@ class jenkins  (
     owner   => 'root',
     group   => 'root',
     mode    => '0640',
-    notify  => Exec['addjenkins'], # I can't see another way to do this.
+    notify  => Exec['firewallreload'], # I can't see another way to do this.
   }
 
-# Do something nicer with the execs
-# do I need to get the default zone?  
-#
-  exec { 'addjenkins' :
-    command     => 'firewall-cmd --reload; firewall-cmd --zone=public --add-service=jenkins --permanent',
-    path        => ['/usr/bin', '/usr/sbin'],
+  exec { 'firewallreload' :
+    command     => 'firewall-cmd --reload',
+    path        => ['/usr/bin', '/usr/sbin', '/sbin'],
+    refreshonly => true,
+    notify      => Exec['addfirewallservice'],
+  }
+
+  exec { 'addfirewallservice' :
+    command     => 'firewall-cmd --zone=public --add-service=jenkins --permanent',
+    path        => ['/usr/bin', '/usr/sbin', '/sbin'],
     refreshonly => true,
     notify      => Service['firewalld'],
   }
 
-  augeas { 'jenkins port' :
-    context => "/files/etc/sysconfig/jenkins",
-    changes => "set JENKINS_PORT $jenkinsport",
-    onlyif  => "match JENKINS_PORT[.='$jenkinsport'] size == 0",
-    notify  => Service['jenkins'],
-    }
 
-  ## IPv6 is trying to use 8080
-  #augeas { "sysctl":
-  #  context => "/files/etc/sysctl.conf",
-  #  changes => [
-  #    #"set net.ipv6.conf.all.disable_ipv6 1",
-  #    "set net.ipv6.conf.$jenkinsport.disable_ipv6 1",
-  #    "set net.ipv6.conf.default.disable_ipv6 1",
-  #  ],
-  #}
+
+  # IPv6 is trying to use 8080
+  augeas { "sysctl":
+    context => "/files/etc/sysctl.conf",
+    changes => [
+      #"set net.ipv6.conf.all.disable_ipv6 1",
+      "set net.ipv6.conf.$jenkinsport.disable_ipv6 1",
+      "set net.ipv6.conf.default.disable_ipv6 1",
+    ],
+  }
 
   #exec { "sysctl -p":
   #  alias       => "sysctl",

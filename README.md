@@ -1,85 +1,63 @@
-# jenkins
+# Steps to Apply the solution
+Prerequisites:
+  1. Vargrant must be installed, in this instance I used Virtualbox as a provider.
+  2. On the command line run ```vagrant box add puppetlabs/centos-7.2-64-puppet```.
 
-Welcome to your new module. A short overview of the generated parts can be found in the PDK documentation at https://puppet.com/pdk/latest/pdk_generating_modules.html .
+Applting the solution:
+  1.   
 
-The README template below provides a starting point with details about what information to include in your README.
 
-#### Table of Contents
 
-1. [Description](#description)
-2. [Setup - The basics of getting started with jenkins](#setup)
-    * [What jenkins affects](#what-jenkins-affects)
-    * [Setup requirements](#setup-requirements)
-    * [Beginning with jenkins](#beginning-with-jenkins)
-3. [Usage - Configuration options and additional functionality](#usage)
-4. [Limitations - OS compatibility, etc.](#limitations)
-5. [Development - Guide for contributing to the module](#development)
+## Describe the most difficult hurdle you had to overcome in implementing your solution.
+The most diffuicult hurdlw was managing firewalld.
+I'd successfully created a jenkins service in /usr/lib/firewalld/services/.
+I've created a block of code that would add the service to the the public zone, see below;
 
-## Description
+  augeas { 'jenkinstest' :
+    context => "/files/usr/lib/firewalld/zones/public.xml",
+    lens    => "Xml.lns",
+    incl    => "/usr/lib/firewalld/zones/public.xml",
+    onlyif  => "get zone/service[last()]/#attribute/name != 'jenkins'",
+    changes => [
+      'set zone/#text[last()+1] "  "',
+      'set zone/service[last()+1] "#empty"',
+      'set zone/service[last()]/#attribute/name "jenkins"'],
+    }
 
-This module will install Jenkins allong with all it's prerequisites and listen on port 8000.
+But there was no way of 
 
-## Setup
 
-### What jenkins affects **OPTIONAL**
+## Please explain why the requirement (d) above is important.
+If it requires manual intevention it's not fully automated.
+Manual tasks can sometimes be done differently by different engineers or sometimes missed entirely.
 
-If it's obvious what your module touches, you can skip this section. For example, folks can probably figure out that your mysql_instance module affects their MySQL instances.
+## Where did you go to find information to help you?
+To get Vagrant up and running I used
+    https://www.youtube.com/watch?v=Jkf5g7L9dSE
+    https://gist.github.com/learncodeacademy/5f84705f2229f14d758d
 
-If there's more that they should know about, though, this is the place to mention:
+For the installation of Jenkins I looked here:
+    https://jenkins.io/doc/book/installing/#fedora
 
-* Files, packages, services, or operations that the module will alter, impact, or execute.
-* Dependencies that your module automatically installs.
-* Warnings or other important notices.
+For generap Puppet resource reference I used;
+    https://puppet.com/docs/puppet/5.5/type.html
 
-### Setup Requirements **OPTIONAL**
+To understand the requirements of firewalld I used these pages;
+    https://firewalld.org/documentation/howto/add-a-service.html
+    https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
 
-If your module requires anything extra before setting up (pluginsync enabled, another module, etc.), mention it here.
+To set the Jenkins port using Augeas I used;
+    https://puppet.com/docs/puppet/5.5/resources_augeas.html#a-better-way
+    https://ask.puppet.com/question/4071/use-augeas-provider-to-edit-xml-file/
 
-If your most recent release breaks compatibility or requires particular steps for upgrading, you might want to include an additional "Upgrading" section here.
 
-### Beginning with jenkins
 
-The very basic steps needed for a user to get the module up and running. This can include setup steps, if necessary, or it can be an example of the most basic use of the module.
+## Briefly explain what automation means to you, and why it is important to an organization's infrastructure design strategy.
+Automation means instead of doing the same thing 
 
-## Usage
+Automation - repeatable tasks, done the same every time, consistency.
 
-Include usage examples for common use cases in the **Usage** section. Show your users how to use your module to solve problems, and be sure to include code examples. Include three to five examples of the most important or common tasks a user can accomplish with your module. Show users how to accomplish more complex tasks that involve different types, classes, and functions working in tandem.
+Delivering things faster. 
 
-## Reference
 
-This section is deprecated. Instead, add reference information to your code as Puppet Strings comments, and then use Strings to generate a REFERENCE.md in your module. For details on how to add code comments and generate documentation with Strings, see the Puppet Strings [documentation](https://puppet.com/docs/puppet/latest/puppet_strings.html) and [style guide](https://puppet.com/docs/puppet/latest/puppet_strings_style.html)
-
-If you aren't ready to use Strings yet, manually create a REFERENCE.md in the root of your module directory and list out each of your module's classes, defined types, facts, functions, Puppet tasks, task plans, and resource types and providers, along with the parameters for each.
-
-For each element (class, defined type, function, and so on), list:
-
-  * The data type, if applicable.
-  * A description of what the element does.
-  * Valid values, if the data type doesn't make it obvious.
-  * Default value, if any.
-
-For example:
-
-```
-### `pet::cat`
-
-#### Parameters
-
-##### `meow`
-
-Enables vocalization in your cat. Valid options: 'string'.
-
-Default: 'medium-loud'.
-```
-
-## Limitations
-
-In the Limitations section, list any incompatibilities, known issues, or other warnings.
-
-## Development
-
-In the Development section, tell other users the ground rules for contributing to your project and how they should submit their work.
-
-## Release Notes/Contributors/Etc. **Optional**
-
-If you aren't using changelog, put your release notes here (though you should consider using changelog). You can also add any additional sections you feel are necessary or important to include here. Please use the `## ` header.
+cp /usr/lib/firewalld/zones/public.xml /tmp/foo.xml
