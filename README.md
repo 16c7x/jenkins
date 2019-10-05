@@ -33,24 +33,6 @@ A simple solution would have been to add the following to the Puppet module.
 But globaly switching security off on a server is generaly considered bad practice.
 All the documentation I found on **firewalld** suggestred there was no way of configuring it without using the ```firewall-cmd ```  command line command which would result in having to use an exec command in the Puppet module. I try to avoid using the exec resource type in Puppet because Puppet is a declerative language and an exec to run a command line is scripting. In this case though there was no other option. 
 
-
-I'd successfully created a jenkins service in /usr/lib/firewalld/services/.
-I've created a block of code that would add the service to the the public zone, see below;
-
-  augeas { 'jenkinstest' :
-    context => "/files/usr/lib/firewalld/zones/public.xml",
-    lens    => "Xml.lns",
-    incl    => "/usr/lib/firewalld/zones/public.xml",
-    onlyif  => "get zone/service[last()]/#attribute/name != 'jenkins'",
-    changes => [
-      'set zone/#text[last()+1] "  "',
-      'set zone/service[last()+1] "#empty"',
-      'set zone/service[last()]/#attribute/name "jenkins"'],
-    }
-
-But there was no way of 
-
-
 ## Please explain why the requirement (d) above is important.
 If it requires manual intevention it's not fully automated.
 
@@ -73,11 +55,33 @@ To set the Jenkins port using Augeas I used;
     https://puppet.com/docs/puppet/5.5/resources_augeas.html#a-better-way
     https://ask.puppet.com/question/4071/use-augeas-provider-to-edit-xml-file/
 
-
-
 ## Briefly explain what automation means to you, and why it is important to an organization's infrastructure design strategy.
-Automation means delivering applications or soutions quickly and consistently.
-An the application of a 
+Automation means delivering applications, solutions or servers quickly and consistently.
+It eliminates inconsistencies that can be intruduced during a manual build through user error, poor documentation or bad habits.
+
+Automation reduces costs, not only does it require fewer people to be involved in the deployment of servers but through a more reliable and consistent deployment process it can significantly reduce down time for buisiness critical applications. 
+
+It can rapidly improve fault finding, bebugging and remediation by making it possible to exactly recreat production servers in the lab where problems can be properly diagnosed and the impact of bug fixes tested in a safe environment. On top of that, once you have developed a fix and fully tested it, you cann apply that fix to your production servers in exactly the same way you applied it to your test servers. 
 
 
-No matter how many times it's run, each time the automation is used the result should be identical to the last allowing 
+####### Stuff that may or may not be worked into the above.
+
+* Automation allows you to difine your infrastructure as code, it allows you to maintain that code under a source control tool such as Gitlab or Github 
+
+* No matter how many times it's run, each time the automation is used the result should be identical to the last allowing 
+
+I'd successfully created a jenkins service in /usr/lib/firewalld/services/.
+I've created a block of code that would add the service to the the public zone, see below;
+
+  augeas { 'jenkinstest' :
+    context => "/files/usr/lib/firewalld/zones/public.xml",
+    lens    => "Xml.lns",
+    incl    => "/usr/lib/firewalld/zones/public.xml",
+    onlyif  => "get zone/service[last()]/#attribute/name != 'jenkins'",
+    changes => [
+      'set zone/#text[last()+1] "  "',
+      'set zone/service[last()+1] "#empty"',
+      'set zone/service[last()]/#attribute/name "jenkins"'],
+    }
+
+But there was no way of 
