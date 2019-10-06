@@ -1,3 +1,4 @@
+###############################
 # This class will setup a Jenkins server on the desired port.
 #
 # It installs the rpms, ensures the required services are running,
@@ -39,6 +40,7 @@ class jenkins  (
 
 ###############################
 # Firewalld needs to expose the port to external connections.
+# To be safe we'll use a custom fact to determine the default firewalld zone.
   service { 'firewalld' :
     ensure => running,
     enable => true,
@@ -62,7 +64,7 @@ class jenkins  (
   }
 
   exec { 'addfirewallservice' :
-    command     => 'firewall-cmd --zone=public --add-service=jenkins --permanent',
+    command     => "firewall-cmd --zone=${firewalldzone} --add-service=jenkins --permanent",
     path        => ['/usr/bin', '/usr/sbin', '/sbin'],
     refreshonly => true,
     notify      => Service['firewalld'],

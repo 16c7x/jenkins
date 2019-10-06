@@ -17,10 +17,10 @@
   1. The **Vagrantfile** is in the root of the Jenkins project directory structure. 
   1. The project directory is mapped into the vagrant machine using this line ```config.vm.synced_folder ".", "/etc/puppetlabs/code/environments/production/modules/jenkins"``` in the **Vagrantfile**.
   2. The port jenkins is on is exposed using this line ```config.vm.network "forwarded_port", guest: 8000, host: 8000``` in the **Vagrantfile**. 
-  3. If you want to switch Jenkins to operate on a different port then you can do so by changing the port number in **/etc/puppetlabs/code/environments/production/modules/jenkins/examples/init.pp**.  
+  3. If you want to switch Jenkins to operate on a different port then you can do so by changing the port number in **/etc/puppetlabs/code/environments/production/modules/jenkins/examples/init.pp**, you will also need to update the **Vagrantfile**.
 
 ## Describe the most difficult hurdle you had to overcome in implementing your solution.
-The most diffuicult hurdle was managing firewalld.
+The most difficult hurdle was managing firewalld.
 A simple solution would have been to add the following to the Puppet module.
 ```
   service { 'firewalld' :
@@ -29,10 +29,10 @@ A simple solution would have been to add the following to the Puppet module.
   }
 ```
 But globaly switching security off on a server is generaly considered bad practice.
-All the documentation I found on **firewalld** suggestred there was no way of configuring it without using the ```firewall-cmd ```  command line command which would result in having to use an exec command in the Puppet module. I try to avoid using the ```exec``` resource type in Puppet because Puppet is a declerative language and an ```exec``` to run a command line is scripting. In this case though there was no other option. 
+All the documentation I found on **firewalld** suggestred there was no way of configuring it without using the ```firewall-cmd ``` command line command which would result in having to use an exec command in the Puppet module. I try to avoid using the ```exec``` resource type in Puppet because Puppet is a declerative language and an ```exec``` to run a command line is scripting. In this case though there was no other option. 
 
 ## Please explain why the requirement (d) above is important.
-If it requires manual intevention it's not fully automated.
+If it requires manual intervention it's not fully automated.
 
 ## Where did you go to find information to help you?
 To get Vagrant up and running I used
@@ -48,6 +48,7 @@ For general Puppet resource reference I used;
 To understand the requirements of firewalld I used these pages;
 - https://firewalld.org/documentation/howto/add-a-service.html
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-using-firewalld-on-centos-7
+- https://www.linode.com/docs/security/firewalls/introduction-to-firewalld-on-centos/
 
 To set the Jenkins port using Augeas I used;
 - https://puppet.com/docs/puppet/5.5/resources_augeas.html#a-better-way
@@ -60,37 +61,4 @@ Automation reduces costs, not only does it require fewer people to deploy a syst
 
 It can rapidly improve fault finding, debugging and remediation by making it possible to exactly recreate production servers in a lab environment where bugs can be diagnosed and the impact of bug fixes tested in a safe environment. In addition, once you have developed a fix and fully tested it, you can apply that fix to your production servers in exactly the same way you applied it to your test servers. 
 
-It allows much tighter version control in relation to your build processes. Manual build processes are often documented in Word documents, PDF's or text files, these often end up being shared via email or saved localy on a users machine where they may become out of date, or even get edited localy resulting in conflicting build processes. An automation tool such as Puppet will pull it's code directly from a controlled code repository such as Gitlab or Github and it can be configured to be notified on any new code updates so it is always using the latest code that has been subject to proper change control.   
-
-####### Stuff that may or may not be worked into the above.
-
-
-
-```
-  augeas { 'jenkinstest' :
-    context => "/files/usr/lib/firewalld/zones/public.xml",
-    lens    => "Xml.lns",
-    incl    => "/usr/lib/firewalld/zones/public.xml",
-    onlyif  => "get zone/service[last()]/#attribute/name != 'jenkins'",
-    changes => [
-      'set zone/#text[last()+1] "  "',
-      'set zone/service[last()+1] "#empty"',
-      'set zone/service[last()]/#attribute/name "jenkins"'],
-    }
-
-  # IPv6 is trying to use 8080
-  augeas { "sysctl":
-    context => "/files/etc/sysctl.conf",
-    changes => [
-      #"set net.ipv6.conf.all.disable_ipv6 1",
-      "set net.ipv6.conf.$jenkinsport.disable_ipv6 1",
-      "set net.ipv6.conf.default.disable_ipv6 1",
-    ],
-  }
-
-  exec { "sysctl -p":
-    alias       => "sysctl",
-    refreshonly => true,
-    subscribe   => File["sysctl_conf"],
-  }
-```
+It allows much tighter version control in relation to your build processes. Manual build processes are often documented in Word documents, PDF's or text files, these often end up being shared via email or saved localy on a users machine where they may become out of date, or even get edited localy resulting in conflicting build processes. An automation tool such as Puppet will pull its code directly from a controlled code repository such as Gitlab or Github and it can be configured to be notified on any new code updates so it is always using the latest code that has been subject to proper change control.
