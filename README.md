@@ -57,13 +57,13 @@ To set the Jenkins port using Augeas I used;
 
 ## Briefly explain what automation means to you, and why it is important to an organization's infrastructure design strategy.
 Automation means delivering applications, solutions or servers quickly and consistently.
-It eliminates inconsistencies that can be intruduced during a manual build through user error, poor documentation or bad habits.
+It eliminates inconsistencies that can be introduced during a manual build through user error, poor documentation or bad habits.
 
-Automation reduces costs, not only does it require fewer people to deploy a system, through a more reliable and consistent deployment process it can significantly reduce down time for buisiness critical applications. 
+Automation reduces costs, not only does it require fewer people to deploy a system, through a more reliable and consistent deployment process it can significantly reduce down time for business critical applications. 
 
-It can rapidly improve fault finding, bebugging and remediation by making it possible to exactly recreat production servers in a lab environment where bugs can be diagnosed and the impact of bug fixes tested in a safe environment. In adition, once you have developed a fix and fully tested it, you can apply that fix to your production servers in exactly the same way you applied it to your test servers. 
+It can rapidly improve fault finding, debugging and remediation by making it possible to exactly recreate production servers in a lab environment where bugs can be diagnosed and the impact of bug fixes tested in a safe environment. In addition, once you have developed a fix and fully tested it, you can apply that fix to your production servers in exactly the same way you applied it to your test servers. 
 
-It allows much tighter version control in relation to your build processes. Manual build processes are often documented in Word documents, PDF's or text files, these often end up being shared via email or saved localy on a users machine where they may become out of date, or even get edited localy resulting in conflicting build processes. An automation tool such as Puppet will pull it's code directly from a controled code repository such as Gitlab or Github and it can be configured to be notified on any new code updates so it is always using the lates code that has been subject to proper change controle.   
+It allows much tighter version control in relation to your build processes. Manual build processes are often documented in Word documents, PDF's or text files, these often end up being shared via email or saved localy on a users machine where they may become out of date, or even get edited localy resulting in conflicting build processes. An automation tool such as Puppet will pull it's code directly from a controlled code repository such as Gitlab or Github and it can be configured to be notified on any new code updates so it is always using the latest code that has been subject to proper change control.   
 
 ####### Stuff that may or may not be worked into the above.
 
