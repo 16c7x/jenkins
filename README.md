@@ -61,18 +61,13 @@ It eliminates inconsistencies that can be intruduced during a manual build throu
 
 Automation reduces costs, not only does it require fewer people to deploy a system, through a more reliable and consistent deployment process it can significantly reduce down time for buisiness critical applications. 
 
-It can rapidly improve fault finding, bebugging and remediation by making it possible to exactly recreat production servers in the lab where bugs can be diagnosed and the impact of bug fixes tested in a safe environment. In adition, once you have developed a fix and fully tested it, you can apply that fix to your production servers in exactly the same way you applied it to your test servers. 
+It can rapidly improve fault finding, bebugging and remediation by making it possible to exactly recreat production servers in a lab environment where bugs can be diagnosed and the impact of bug fixes tested in a safe environment. In adition, once you have developed a fix and fully tested it, you can apply that fix to your production servers in exactly the same way you applied it to your test servers. 
 
-It allows much tighter version control in relation of your build processes. Manual build processes are often documented in Word documents, PDF's or text files, these often end up being shared via email or saved localy on a users machine where they may become out of date, or even get edited localy resulting in conflicting build processes. An automation tool such as Puppet will pull it's code directly from a controled code repository such as Gitlab or Github and it can be configured to be notified on any new code updates so it is always using the lates code that has been subject to proper change controle.   
+It allows much tighter version control in relation to your build processes. Manual build processes are often documented in Word documents, PDF's or text files, these often end up being shared via email or saved localy on a users machine where they may become out of date, or even get edited localy resulting in conflicting build processes. An automation tool such as Puppet will pull it's code directly from a controled code repository such as Gitlab or Github and it can be configured to be notified on any new code updates so it is always using the lates code that has been subject to proper change controle.   
 
 ####### Stuff that may or may not be worked into the above.
 
-* Automation allows you to difine your infrastructure as code, it allows you to maintain that code under a source control tool such as Gitlab or Github 
 
-* No matter how many times it's run, each time the automation is used the result should be identical to the last allowing 
-
-I'd successfully created a jenkins service in /usr/lib/firewalld/services/.
-I've created a block of code that would add the service to the the public zone, see below;
 
 ```
   augeas { 'jenkinstest' :
@@ -85,6 +80,20 @@ I've created a block of code that would add the service to the the public zone, 
       'set zone/service[last()+1] "#empty"',
       'set zone/service[last()]/#attribute/name "jenkins"'],
     }
-```
 
-But there was no way of 
+  # IPv6 is trying to use 8080
+  augeas { "sysctl":
+    context => "/files/etc/sysctl.conf",
+    changes => [
+      #"set net.ipv6.conf.all.disable_ipv6 1",
+      "set net.ipv6.conf.$jenkinsport.disable_ipv6 1",
+      "set net.ipv6.conf.default.disable_ipv6 1",
+    ],
+  }
+
+  exec { "sysctl -p":
+    alias       => "sysctl",
+    refreshonly => true,
+    subscribe   => File["sysctl_conf"],
+  }
+```

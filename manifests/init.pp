@@ -23,13 +23,14 @@ class jenkins  (
   package { 'java' : ensure => 'installed'}
   package {'jenkins' : ensure => 'installed'}
 
-###############################
-# Install and configure Jenkins
   service { 'jenkins' :
     ensure => running,
     #enable => true,  <- TEST THIS
   }
 
+###############################
+# Configure Jenkins to listen on the required port, if the port changes 
+# restart Jenkins. 
   augeas { 'jenkins_port' :
     context => "/files/etc/sysconfig/jenkins",
     changes => "set JENKINS_PORT $jenkinsport",
@@ -39,9 +40,6 @@ class jenkins  (
 
 ###############################
 # Firewalld needs to expose the port to external connections.
-# I could add - service {'firewalld' ; ensure => 'stopped', }
-# but that's a bit excessive.
-# It's enabled by default we need to define it so we can refresh it  
   service { 'firewalld' :
     ensure => running,
     enable => true,
@@ -54,7 +52,7 @@ class jenkins  (
     owner   => 'root',
     group   => 'root',
     mode    => '0640',
-    notify  => Exec['firewallreload'], # I can't see another way to do this.
+    notify  => Exec['firewallreload'],
   }
 
   exec { 'firewallreload' :
@@ -70,23 +68,4 @@ class jenkins  (
     refreshonly => true,
     notify      => Service['firewalld'],
   }
-
-
-
-  # IPv6 is trying to use 8080
-  augeas { "sysctl":
-    context => "/files/etc/sysctl.conf",
-    changes => [
-      #"set net.ipv6.conf.all.disable_ipv6 1",
-      "set net.ipv6.conf.$jenkinsport.disable_ipv6 1",
-      "set net.ipv6.conf.default.disable_ipv6 1",
-    ],
-  }
-
-  #exec { "sysctl -p":
-  #  alias       => "sysctl",
-  #  refreshonly => true,
-  #  subscribe   => File["sysctl_conf"],
-  #}
-
 }
